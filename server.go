@@ -194,7 +194,7 @@ func (EmptyServerOption) apply(*serverOptions) {}
 // funcServerOption wraps a function that modifies serverOptions into an
 // implementation of the ServerOption interface.
 type funcServerOption struct {
-	f func(*serverOptions)
+	 f func(*serverOptions)
 }
 
 func (fdo *funcServerOption) apply(do *serverOptions) {
@@ -573,7 +573,9 @@ func NewServer(opt ...ServerOption) *Server {
 		czData:   new(channelzData),
 	}
 	chainUnaryServerInterceptors(s)
+	//与unary拦截器类似
 	chainStreamServerInterceptors(s)
+	//并发控制多个goroutine,用于优雅地停止connections
 	s.cv = sync.NewCond(&s.mu)
 	if EnableTracing {
 		_, file, line, _ := runtime.Caller(1)
@@ -1092,10 +1094,13 @@ func chainUnaryServerInterceptors(s *Server) {
 
 	var chainedInt UnaryServerInterceptor
 	if len(interceptors) == 0 {
+		//无拦截器
 		chainedInt = nil
 	} else if len(interceptors) == 1 {
+		//只有一个拦截器
 		chainedInt = interceptors[0]
 	} else {
+		//返回一个方法，组成一个链式拦截器
 		chainedInt = chainUnaryInterceptors(interceptors)
 	}
 
